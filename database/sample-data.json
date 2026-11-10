@@ -1,0 +1,43 @@
+{
+  "users": [
+    {"user_id": "U001", "name": "Admin User", "email": "admin@example.com", "role": "ADMIN", "status": "ACTIVE"},
+    {"user_id": "U002", "name": "Recruiter User", "email": "recruiter@example.com", "role": "RECRUITER", "status": "ACTIVE"},
+    {"user_id": "U003", "name": "Rahul", "email": "rahul@example.com", "role": "INTERVIEWER", "status": "ACTIVE"},
+    {"user_id": "U004", "name": "John Doe", "email": "john@example.com", "role": "CANDIDATE", "status": "ACTIVE"}
+  ],
+  "candidates": [
+    {
+      "candidate_id": "CAND-001",
+      "user_id": "U004",
+      "primary_skill": "Python",
+      "phase1_assessment_id": "ASM-001",
+      "phase1_score": 84,
+      "phase1_status": "PASSED",
+      "interview_eligible": true
+    }
+  ],
+  "interviewers": [
+    {
+      "interviewer_id": "INTV-001",
+      "user_id": "U003",
+      "department": "Engineering",
+      "expertise": "Python, AI, Django",
+      "availability_status": "AVAILABLE"
+    }
+  ],
+  "interviews": [
+    {
+      "interview_id": "INT-1001",
+      "candidate_id": "CAND-001",
+      "interviewer_id": "INTV-001",
+      "recruiter_id": "U002",
+      "interview_type": "TECHNICAL",
+      "scheduled_date": "2026-09-15",
+      "scheduled_time": "10:30",
+      "duration_minutes": 45,
+      "platform": "GOOGLE_MEET",
+      "meeting_link": "https://meet.google.com/example",
+      "status": "SCHEDULED"
+    }
+  ]
+}

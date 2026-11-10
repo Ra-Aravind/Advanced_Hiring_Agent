@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Hiring System - Phase 2</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AH</div>
+        <div>
+          <h1>Advanced Hiring</h1>
+          <span>Phase 2 · Interview Management</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-section="dashboard">Dashboard</button>
+        <button class="nav-item" data-section="candidates">Candidates</button>
+        <button class="nav-item" data-section="interviewers">Interviewers</button>
+        <button class="nav-item" data-section="interviews">Interviews</button>
+        <button class="nav-item" data-section="feedback">Feedback</button>
+        <button class="nav-item" data-section="reports">AI Reports</button>
+      </nav>
+
+      <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 10px;">
+        <div>
+          <span class="status-dot"></span>
+          Live · API connected
+        </div>
+        <div id="userInfo" style="color: white; font-size: 13px; font-weight: bold; display: none;">
+          <span id="userNameDisplay">User Name</span><br>
+          <span id="userRoleDisplay" style="color: #9ca3af; font-size: 11px; font-weight: normal;">Role</span>
+        </div>
+        <button class="secondary-btn" id="logoutBtn" style="font-size: 11px; padding: 5px 10px; display: none;">Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">AI-POWERED INTERVIEW MANAGEMENT</p>
+          <h2 id="page-title">Interview Dashboard</h2>
+        </div>
+        <button class="primary-btn" id="scheduleBtn">+ Schedule Interview</button>
+      </header>
+
+      <!-- ── Dashboard ────────────────────────────────────────── -->
+      <section id="dashboard" class="page-section active-section">
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="content-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Upcoming Interviews</h3>
+                <p>Scheduled candidate interviews</p>
+              </div>
+              <button class="text-btn" data-section-link="interviews">View all</button>
+            </div>
+            <div id="upcomingList"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>AI Hiring Insights</h3>
+                <p>Gemini AI analysis pipeline</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="insight-icon">AI</div>
+              <div>
+                <strong>Interview readiness</strong>
+                <p>Candidates from Phase 1 are automatically imported and validated for eligibility.</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="insight-icon">!</div>
+              <div>
+                <strong>Feedback pending</strong>
+                <p>Check the Feedback tab for completed interviews awaiting evaluation.</p>
+              </div>
+            </div>
+            <div class="insight">
+              <div class="insight-icon">&#9733;</div>
+              <div>
+                <strong>AI Reports ready</strong>
+                <p>After feedback is submitted, Gemini generates a HIRE / HOLD / REJECT recommendation.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Candidates ───────────────────────────────────────── -->
+      <section id="candidates" class="page-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Candidates</h3>
+              <p>Imported from Phase 1 Assessment results.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Technology</th>
+                  <th>Phase 1 Score</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="candidateTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Interviewers ─────────────────────────────────────── -->
+      <section id="interviewers" class="page-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Interviewers</h3>
+              <p>Manage technical interviewers and their availability.</p>
+            </div>
+            <button class="primary-btn" id="addInterviewerBtn">+ Add Interviewer</button>
+          </div>
+          <div class="cards-grid" id="interviewerCards"></div>
+        </div>
+      </section>
+
+      <!-- ── Interviews ───────────────────────────────────────── -->
+      <section id="interviews" class="page-section">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Interview Management</h3>
+              <p>Track scheduled, in-progress and completed interviews.</p>
+            </div>
+            <button class="primary-btn" id="scheduleBtn2">+ Schedule Interview</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Candidate</th>
+                  <th>Interviewer</th>
+                  <th>Date &amp; Time</th>
+                  <th>Duration</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="interviewTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Feedback ─────────────────────────────────────────── -->
+      <section id="feedback" class="page-section">
+        <div class="content-grid">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Completed Interviews</h3>
+                <p>Click to provide or update feedback</p>
+              </div>
+            </div>
+            <div id="feedbackList"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Evaluate <span id="fbCandidateName">Candidate</span></h3>
+                <p>Submit scores out of 10 · Re-submit to update</p>
+              </div>
+            </div>
+
+            <form id="feedbackForm">
+              <div class="feedback-grid">
+                <div class="score-box">
+                  <label>Technical</label>
+                  <input type="number" id="fTech" min="0" max="10" step="0.5" placeholder="0–10" required>
+                </div>
+                <div class="score-box">
+                  <label>Problem Solving</label>
+                  <input type="number" id="fProb" min="0" max="10" step="0.5" placeholder="0–10" required>
+                </div>
+                <div class="score-box">
+                  <label>Coding</label>
+                  <input type="number" id="fCode" min="0" max="10" step="0.5" placeholder="0–10" required>
+                </div>
+                <div class="score-box">
+                  <label>Communication</label>
+                  <input type="number" id="fComm" min="0" max="10" step="0.5" placeholder="0–10" required>
+                </div>
+                <div class="score-box">
+                  <label>Confidence</label>
+                  <input type="number" id="fConf" min="0" max="10" step="0.5" placeholder="0–10" required>
+                </div>
+                <div class="score-box">
+                  <label>Overall</label>
+                  <input type="number" id="fOver" min="0" max="10" step="0.5" placeholder="0–10" required>
+                </div>
+              </div>
+
+              <label>Strengths
+                <textarea id="fStrengths" placeholder="E.g., Strong algorithmic thinking, good Python fundamentals..."></textarea>
+              </label>
+              <label>Weaknesses / Improvement Areas
+                <textarea id="fWeak" placeholder="E.g., System design could be stronger..."></textarea>
+              </label>
+              <label>Additional Comments
+                <textarea id="fComments" placeholder="Any other observations or notes..."></textarea>
+              </label>
+
+              <label>Recommendation
+                <select id="fRec" required>
+                  <option value="HIRE">HIRE</option>
+                  <option value="HOLD" selected>HOLD</option>
+                  <option value="REJECT">REJECT</option>
+                </select>
+              </label>
+
+              <button type="submit" class="primary-btn">Submit / Update Feedback &amp; Run AI Analysis</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── AI Reports ────────────────────────────────────────── -->
+      <section id="reports" class="page-section">
+        <div class="panel" style="max-width:820px;margin:0 auto">
+          <div class="panel-header">
+            <div>
+              <h3>AI Interview Analysis</h3>
+              <p>Gemini-powered hiring recommendations based on Phase 1 &amp; Phase 2 data</p>
+            </div>
+          </div>
+
+          <div id="aiReportContainer">
+            <div class="empty-state">
+              <div class="empty-icon">AI</div>
+              <h3>No analysis yet</h3>
+              <p>Submit feedback for a completed interview to generate an AI report.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ── Schedule Interview Modal ─────────────────────────────────────────── -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">NEW INTERVIEW</p>
+          <h3>Schedule Interview</h3>
+        </div>
+        <button class="icon-btn" id="closeModal">&#215;</button>
+      </div>
+      <form id="scheduleForm">
+        <label>Candidate
+          <select id="candidateSelect" required></select>
+        </label>
+        <label>Interviewer
+          <select id="interviewerSelect" required></select>
+        </label>
+        <label>Interview Type
+          <select id="typeSelect" required>
+            <option value="TECHNICAL" selected>Technical</option>
+            <option value="HR">HR / Behavioral</option>
+            <option value="CULTURAL">Cultural Fit</option>
+          </select>
+        </label>
+        <div class="form-row">
+          <label>Date
+            <input type="date" id="dateInput" required>
+          </label>
+          <label>Time
+            <input type="time" id="timeInput" required>
+          </label>
+        </div>
+        <label>Duration
+          <select id="durationInput">
+            <option value="30">30 minutes</option>
+            <option value="45" selected>45 minutes</option>
+            <option value="60">60 minutes</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="cancelModal">Cancel</button>
+          <button type="submit" class="primary-btn">Create Interview</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Add Interviewer Modal ─────────────────────────────────────────────── -->
+  <div class="modal-backdrop" id="addInterviewerBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <p class="eyebrow">NEW INTERVIEWER</p>
+          <h3>Add Interviewer</h3>
+        </div>
+        <button class="icon-btn" id="closeAddInterviewerModal">&#215;</button>
+      </div>
+      <form id="addInterviewerForm">
+        <div class="form-row">
+          <label>Full Name
+            <input type="text" id="aiName" placeholder="e.g. Ravi Kumar" required>
+          </label>
+          <label>Email
+            <input type="email" id="aiEmail" placeholder="e.g. ravi@company.com" required>
+          </label>
+        </div>
+        <div class="form-row">
+          <label>Department
+            <input type="text" id="aiDept" placeholder="e.g. Engineering">
+          </label>
+          <label>Years of Experience
+            <input type="number" id="aiExp" min="0" max="40" step="0.5" placeholder="e.g. 5">
+          </label>
+        </div>
+        <label>Expertise / Skills
+          <input type="text" id="aiExpertise" placeholder="e.g. Python, Django, Machine Learning">
+        </label>
+        <label>Initial Availability
+          <select id="aiStatus">
+            <option value="AVAILABLE" selected>Available</option>
+            <option value="BUSY">Busy</option>
+          </select>
+        </label>
+        <div class="form-actions">
+          <button type="button" class="secondary-btn" id="cancelAddInterviewer">Cancel</button>
+          <button type="submit" class="primary-btn">Add Interviewer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Login Modal ─────────────────────────────────────────────── -->
+  <div class="modal-backdrop open" id="loginBackdrop" style="z-index: 1000; background: #0f172a;">
+    <div class="modal" style="width: 400px; text-align: center; padding: 40px 30px;">
+      <div class="brand-mark" style="margin: 0 auto 20px;">AH</div>
+      <h2 style="margin-bottom: 5px;">Welcome back</h2>
+      <p class="subtle" style="margin-bottom: 30px;">Sign in to Advanced Hiring System</p>
+      <form id="loginForm" style="text-align: left;">
+        <label>Email
+          <input type="email" id="loginEmail" placeholder="e.g. recruiter@company.com" required>
+        </label>
+        <label>Password
+          <input type="password" id="loginPassword" placeholder="e.g. password123" required>
+        </label>
+        <button type="submit" class="primary-btn" style="width: 100%; margin-top: 15px; padding: 12px;">Sign In</button>
+        <div style="margin-top: 15px; font-size: 12px; color: var(--muted); text-align: center;">
+          Demo accounts (Password: <strong>password123</strong>)<br>
+          Recruiter: <strong>recruiter@hiringco.com</strong><br>
+          Interviewer: <strong>rahul.sharma@hiringco.com</strong>
+        </div>
+        <div style="margin-top: 16px; text-align: center; border-top: 1px solid var(--line); padding-top: 16px;">
+          <a href="interviewer_profile.html" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">
+            Interviewer? Access your personal portal →
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="data/mock-data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

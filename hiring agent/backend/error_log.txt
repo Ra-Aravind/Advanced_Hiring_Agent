@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "C:\Genvex_internship\hiring agent\backend\app\api\candidate\sessions.py", line 110, in _background_evaluate
+    await evaluate_session(db, session_id)
+  File "C:\Genvex_internship\hiring agent\backend\app\services\evaluation_service.py", line 75, in evaluate_session
+    answer_map = {a.question_id: a for a in session.answers}
+                                            ^^^^^^^^^^^^^^^
+TypeError: 'CandidateAnswer' object is not iterable

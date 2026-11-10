@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interviewer Portal · Advanced Hiring System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ─── Profile-specific overrides ─── */
+    .profile-hero {
+      background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%);
+      border-radius: 12px;
+      padding: 30px;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .profile-avatar-lg {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; font-weight: 900;
+      flex-shrink: 0;
+    }
+    .profile-hero h1 { margin: 0 0 4px; font-size: 24px; }
+    .profile-hero p  { margin: 0; opacity: 0.85; font-size: 14px; }
+    .hero-stats { display: flex; gap: 30px; margin-top: 16px; }
+    .hero-stat { text-align: center; }
+    .hero-stat-value { font-size: 28px; font-weight: 900; }
+    .hero-stat-label { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+    .hero-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+
+    /* candidate card grid */
+    .candidate-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 10px; }
+    .cand-card { background: white; border-radius: 12px; border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+    .cand-card-header { padding: 20px; border-bottom: 1px solid var(--line); display: flex; gap: 14px; align-items: flex-start; }
+    .cand-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 17px; flex-shrink: 0; }
+    .cand-name { font-weight: 700; font-size: 16px; margin-bottom: 2px; }
+    .cand-skill { font-size: 12px; color: var(--muted); }
+    .cand-card-body { padding: 16px 20px; flex: 1; }
+    .cand-card-footer { padding: 12px 20px; background: #f9fafb; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; }
+
+    .score-pill { display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: var(--primary); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .score-pill.pass { background: #f0fdf4; color: #15803d; }
+    .score-pill.fail { background: #fef2f2; color: #dc2626; }
+
+    .scores-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+    .score-row { display: flex; justify-content: space-between; font-size: 12px; }
+    .score-bar-wrap { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+    .score-bar { height: 5px; border-radius: 3px; background: #e2e8f0; flex: 1; }
+    .score-bar-fill { height: 100%; border-radius: 3px; background: var(--primary); }
+
+    .info-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
+    .info-label { color: var(--muted); }
+    .info-val { font-weight: 600; }
+
+    /* Tabs */
+    .tab-bar { display: flex; gap: 4px; padding: 4px; background: #f1f5f9; border-radius: 8px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 8px; border: none; background: transparent; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .tab-btn.active { background: white; color: var(--primary); font-weight: 700; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    /* Login screen */
+    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; }
+    .login-box { background: white; border-radius: 16px; padding: 48px 40px; width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .login-logo { font-size: 32px; font-weight: 900; color: var(--primary); margin-bottom: 8px; }
+    .login-title { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
+    .login-sub { color: var(--muted); font-size: 14px; margin-bottom: 30px; }
+
+    /* Filter bar */
+    .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+    .filter-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--line); background: white; font-size: 12px; cursor: pointer; color: var(--muted); transition: all 0.15s; }
+    .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty h3 { color: #475569; margin-bottom: 6px; }
+
+    /* Overlay for loading */
+    #overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.7); z-index: 200; align-items: center; justify-content: center; }
+    #overlay.show { display: flex; }
+    .spinner { width: 48px; height: 48px; border: 4px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(10px); transition: all 0.3s; z-index: 999; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #dc2626; }
+    .toast.success { background: #16a34a; }
+
+    .section-heading { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .section-sub { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
+  </style>
+</head>
+<body style="background: #f8fafc; min-height: 100vh;">
+
+<!-- ─── Loading Overlay ──────────────────────────────── -->
+<div id="overlay"><div class="spinner"></div></div>
+
+<!-- ─── Login Screen ─────────────────────────────────── -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">AH</div>
+    <h2 class="login-title">Interviewer Portal</h2>
+    <p class="login-sub">Sign in with your credentials to access your profile and assigned candidates.</p>
+    <form id="loginForm">
+      <label>Email Address
+        <input type="email" id="loginEmail" placeholder="e.g. rahul.sharma@hiringco.com" required>
+      </label>
+      <label>Password
+        <input type="password" id="loginPassword" placeholder="Password" required>
+      </label>
+      <button type="submit" class="primary-btn" style="width:100%; margin-top: 12px; padding: 13px;">Sign In</button>
+    </form>
+    <div id="loginError" style="color: #dc2626; font-size: 13px; margin-top: 12px; display: none;"></div>
+    <div style="margin-top: 24px; font-size: 12px; color: #94a3b8; text-align: center;">
+      Demo credentials (password: <strong>password123</strong>)<br>
+      rahul.sharma@hiringco.com · priya.patel@hiringco.com<br>
+      arun.kumar@hiringco.com · divya.menon@hiringco.com
+    </div>
+  </div>
+</div>
+
+<!-- ─── Main Dashboard ────────────────────────────────── -->
+<div id="mainDash" style="display:none; padding: 28px; max-width: 1200px; margin: 0 auto;">
+
+  <!-- Top Bar -->
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <div>
+      <div class="eyebrow" style="color: var(--primary); font-size: 11px; font-weight: 700; letter-spacing: 1px;">ADVANCED HIRING SYSTEM · PHASE 2</div>
+      <h1 style="margin: 4px 0 0; font-size: 22px;">Interviewer Portal</h1>
+    </div>
+    <div style="display:flex; gap:10px; align-items: center;">
+      <span id="topUserName" style="font-size: 14px; color: var(--muted);"></span>
+      <button class="secondary-btn" onclick="logout()">Sign Out</button>
+      <a href="index.html" class="primary-btn" style="text-decoration: none; padding: 8px 16px; font-size: 13px;">← Admin Panel</a>
+    </div>
+  </div>
+
+  <!-- Profile Hero -->
+  <div class="profile-hero" id="profileHero">
+    <div class="profile-avatar-lg" id="heroAvatar">?</div>
+    <div>
+      <h1 id="heroName">Loading...</h1>
+      <p id="heroDetails">Department · Expertise</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="statTotal">0</div>
+          <div class="hero-stat-label">Total Interviews</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="statCompleted">0</div>
+          <div class="hero-stat-label">Completed</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="statPending">0</div>
+          <div class="hero-stat-label">Feedback Due</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <span id="availBadge" class="badge"></span>
+      <button class="secondary-btn" id="toggleAvailBtn" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.4);">Toggle Availability</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('all', this)">All Candidates</button>
+    <button class="tab-btn" onclick="switchTab('scheduled', this)">Scheduled</button>
+    <button class="tab-btn" onclick="switchTab('completed', this)">Completed</button>
+    <button class="tab-btn" onclick="switchTab('feedback_due', this)">Feedback Due</button>
+  </div>
+
+  <!-- Candidate Grid -->
+  <div>
+    <div class="section-heading" id="gridHeading">Allocated Candidates</div>
+    <div class="section-sub" id="gridSub">All candidates assigned to you</div>
+    <div id="candidateGrid" class="candidate-grid"></div>
+  </div>
+</div>
+
+<!-- ─── Feedback Modal ────────────────────────────────── -->
+<div class="modal-backdrop" id="fbModalBackdrop">
+  <div class="modal" style="max-width: 620px; max-height: 90vh; overflow-y: auto;">
+    <div class="modal-header">
+      <div>
+        <p class="eyebrow">SUBMIT / UPDATE FEEDBACK</p>
+        <h3 id="fbModalTitle">Evaluate Candidate</h3>
+      </div>
+      <button class="icon-btn" onclick="closeFbModal()">&#215;</button>
+    </div>
+
+    <form id="feedbackForm" style="padding: 0 4px;">
+      <div class="feedback-grid" style="margin-bottom: 16px;">
+        <div class="score-box"><label>Technical<input type="number" id="fTech" min="0" max="10" step="0.5" placeholder="0–10" required></label></div>
+        <div class="score-box"><label>Problem Solving<input type="number" id="fProb" min="0" max="10" step="0.5" placeholder="0–10" required></label></div>
+        <div class="score-box"><label>Coding<input type="number" id="fCode" min="0" max="10" step="0.5" placeholder="0–10" required></label></div>
+        <div class="score-box"><label>Communication<input type="number" id="fComm" min="0" max="10" step="0.5" placeholder="0–10" required></label></div>
+        <div class="score-box"><label>Confidence<input type="number" id="fConf" min="0" max="10" step="0.5" placeholder="0–10" required></label></div>
+        <div class="score-box"><label>Overall<input type="number" id="fOver" min="0" max="10" step="0.5" placeholder="0–10" required></label></div>
+      </div>
+      <label>Strengths<textarea id="fStrengths" placeholder="Technical strengths you observed..."></textarea></label>
+      <label>Weaknesses / Improvement Areas<textarea id="fWeak" placeholder="Areas the candidate can improve..."></textarea></label>
+      <label>Additional Comments<textarea id="fComments" placeholder="Any other notes..."></textarea></label>
+      <label>Recommendation
+        <select id="fRec" required>
+          <option value="HIRE">HIRE</option>
+          <option value="HOLD" selected>HOLD</option>
+          <option value="REJECT">REJECT</option>
+        </select>
+      </label>
+      <div style="display:flex; gap:12px; justify-content:flex-end; margin-top: 20px;">
+        <button type="button" class="secondary-btn" onclick="closeFbModal()">Cancel</button>
+        <button type="submit" class="primary-btn">Submit / Update Feedback</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API = "http://127.0.0.1:8000/api/v1";
+
+let profile = null;
+let currentUser = null;
+let currentInterviewId = null;
+let currentFilter = "all";
+
+// ── Utilities ────────────────────────────────────────────────
+function showOverlay() { document.getElementById("overlay").classList.add("show"); }
+function hideOverlay() { document.getElementById("overlay").classList.remove("show"); }
+
+function toast(msg, type = "success") {
+  const t = document.createElement("div");
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.classList.add("show"), 10);
+  setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 3500);
+}
+
+async function apiCall(endpoint, opts = {}) {
+  const res = await fetch(API + endpoint, { headers: { "Content-Type": "application/json" }, ...opts });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || "API Error");
+  return data;
+}
+
+function formatDateTime(date, time) {
+  if (!date || !time) return "TBD";
+  const d = new Date(`${date}T${time}`);
+  return d.toLocaleString([], { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function scoreColor(s) {
+  if (s == null) return "#94a3b8";
+  if (s >= 8) return "#16a34a";
+  if (s >= 6) return "#d97706";
+  return "#dc2626";
+}
+
+function statusClass(s) {
+  if (s === "COMPLETED") return "completed";
+  if (s === "CANCELLED" || s === "NO_SHOW") return "pending";
+  return "scheduled";
+}
+
+// ── Login ────────────────────────────────────────────────────
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+
+  showOverlay();
+  try {
+    const user = await apiCall("/auth/login", { method: "POST", body: JSON.stringify({ email, password: pass }) });
+    if (user.role !== "INTERVIEWER") {
+      errEl.textContent = "This portal is for interviewers only. Please use the Admin Panel.";
+      errEl.style.display = "block";
+      hideOverlay();
+      return;
+    }
+    currentUser = user;
+    document.getElementById("topUserName").textContent = user.name;
+    await loadProfile(user.email);
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = "block";
+    hideOverlay();
+  }
+});
+
+// ── Load Profile ─────────────────────────────────────────────
+async function loadProfile(email) {
+  showOverlay();
+  try {
+    profile = await apiCall(`/interviewers/by-email/${encodeURIComponent(email)}`);
+    renderProfile();
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainDash").style.display = "block";
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    hideOverlay();
+  }
+}
+
+// ── Render Profile Hero ───────────────────────────────────────
+function renderProfile() {
+  document.getElementById("heroAvatar").textContent = profile.name.charAt(0).toUpperCase();
+  document.getElementById("heroName").textContent = profile.name;
+  document.getElementById("heroDetails").textContent = [profile.department, profile.expertise].filter(Boolean).join(" · ");
+  document.getElementById("statTotal").textContent = profile.total_interviews;
+  document.getElementById("statCompleted").textContent = profile.completed_interviews;
+  document.getElementById("statPending").textContent = profile.pending_feedback;
+
+  const badge = document.getElementById("availBadge");
+  badge.textContent = profile.availability_status === "AVAILABLE" ? "Available" : "Busy";
+  badge.className = `badge ${profile.availability_status === "AVAILABLE" ? "completed" : "pending"}`;
+
+  document.getElementById("toggleAvailBtn").onclick = () => toggleAvailability();
+
+  renderCandidates(currentFilter);
+}
+
+// ── Render Candidate Cards ────────────────────────────────────
+function renderCandidates(filter = "all") {
+  currentFilter = filter;
+  let candidates = profile.allocated_candidates;
+
+  if (filter === "scheduled") candidates = candidates.filter(c => c.interview_status === "SCHEDULED" || c.interview_status === "IN_PROGRESS");
+  if (filter === "completed") candidates = candidates.filter(c => c.interview_status === "COMPLETED");
+  if (filter === "feedback_due") candidates = candidates.filter(c => c.interview_status === "COMPLETED" && !c.has_feedback);
+
+  const headings = {
+    all: ["Allocated Candidates", "All candidates assigned to you"],
+    scheduled: ["Upcoming Interviews", "Scheduled interviews waiting to happen"],
+    completed: ["Completed Interviews", "Interviews you have conducted"],
+    feedback_due: ["Feedback Due", "Completed interviews awaiting your evaluation"],
+  };
+  document.getElementById("gridHeading").textContent = headings[filter][0];
+  document.getElementById("gridSub").textContent = headings[filter][1];
+
+  const grid = document.getElementById("candidateGrid");
+
+  if (!candidates.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column: 1/-1">
+      <div class="empty-icon">📋</div>
+      <h3>No candidates here</h3>
+      <p>Nothing to show for this filter.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = candidates.map(c => candidateCard(c)).join("");
+}
+
+function candidateCard(c) {
+  const phase1Badge = c.phase1_score != null
+    ? `<span class="score-pill ${c.phase1_status === 'PASSED' ? 'pass' : 'fail'}">Phase 1: ${c.phase1_score}%</span>`
+    : `<span class="score-pill">Phase 1: N/A</span>`;
+
+  let feedbackSection = "";
+  if (c.has_feedback) {
+    const scores = [
+      { label: "Technical", val: c.technical_score },
+      { label: "Prob. Solving", val: c.problem_solving_score },
+      { label: "Coding", val: c.coding_score },
+      { label: "Communication", val: c.communication_score },
+      { label: "Confidence", val: c.confidence_score },
+      { label: "Overall", val: c.overall_score },
+    ];
+    const recClass = c.recommendation === "HIRE" ? "completed" : (c.recommendation === "REJECT" ? "pending" : "scheduled");
+
+    feedbackSection = `
+      <div style="margin-top: 14px; border-top: 1px solid var(--line); padding-top: 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:12px; font-weight:700; color:var(--muted);">YOUR EVALUATION</span>
+          <span class="badge ${recClass}">${c.recommendation}</span>
+        </div>
+        <div class="scores-breakdown">
+          ${scores.map(s => `
+            <div>
+              <div class="score-row">
+                <span style="color:var(--muted)">${s.label}</span>
+                <span style="font-weight:600; color:${scoreColor(s.val)}">${s.val != null ? s.val + "/10" : "—"}</span>
+              </div>
+              <div class="score-bar-wrap">
+                <div class="score-bar"><div class="score-bar-fill" style="width:${s.val != null ? s.val * 10 : 0}%; background:${scoreColor(s.val)}"></div></div>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+        ${c.strengths ? `<div style="margin-top:10px;font-size:12px;color:#15803d;"><strong>Strengths:</strong> ${c.strengths}</div>` : ""}
+        ${c.weaknesses ? `<div style="margin-top:4px;font-size:12px;color:#b45309;"><strong>Gaps:</strong> ${c.weaknesses}</div>` : ""}
+      </div>`;
+  } else if (c.interview_status === "COMPLETED") {
+    feedbackSection = `
+      <div style="margin-top:12px;padding:12px;background:#fef3c7;border-radius:8px;font-size:13px;color:#92400e;">
+        ⚠️ <strong>Feedback required</strong> — This interview is complete but you haven't submitted evaluation yet.
+      </div>`;
+  }
+
+  const actions = [];
+  if (c.interview_status === "SCHEDULED" && c.meeting_link) {
+    actions.push(`<a href="${c.meeting_link}" target="_blank" class="primary-btn" style="padding:6px 14px;font-size:12px;text-decoration:none;">Join Meeting</a>`);
+  }
+  if (c.interview_status === "COMPLETED") {
+    actions.push(`<button class="secondary-btn" style="padding:6px 14px;font-size:12px;" onclick="openFeedback('${c.interview_id}', '${c.name.replace(/'/g, "\\'")}')">
+      ${c.has_feedback ? "Update Feedback" : "Submit Feedback"}
+    </button>`);
+  }
+
+  return `
+    <div class="cand-card">
+      <div class="cand-card-header">
+        <div class="cand-avatar">${c.name.charAt(0)}</div>
+        <div style="flex:1">
+          <div class="cand-name">${c.name}</div>
+          <div class="cand-skill">${c.primary_skill || "N/A"} ${c.experience_years ? "· " + c.experience_years + " yrs" : ""}</div>
+          <div style="margin-top:8px;">${phase1Badge}</div>
+        </div>
+        <span class="badge ${statusClass(c.interview_status)}">${c.interview_status.replace("_", " ")}</span>
+      </div>
+      <div class="cand-card-body">
+        <div class="info-row">
+          <span class="info-label">Interview Type</span>
+          <span class="info-val">${c.interview_type}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Scheduled</span>
+          <span class="info-val">${formatDateTime(c.scheduled_date, c.scheduled_time)}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Duration</span>
+          <span class="info-val">${c.duration_minutes} minutes</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Platform</span>
+          <span class="info-val">${c.platform.replace("_", " ")}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-val" style="font-size:12px">${c.email}</span>
+        </div>
+        ${feedbackSection}
+      </div>
+      ${actions.length ? `<div class="cand-card-footer">${actions.join("")}</div>` : ""}
+    </div>`;
+}
+
+// ── Tab Switching ─────────────────────────────────────────────
+function switchTab(filter, btn) {
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderCandidates(filter);
+}
+
+// ── Toggle Availability ───────────────────────────────────────
+async function toggleAvailability() {
+  const newStatus = profile.availability_status === "AVAILABLE" ? "BUSY" : "AVAILABLE";
+  showOverlay();
+  try {
+    await apiCall(`/interviewers/${profile.interviewer_id}/availability`, {
+      method: "PATCH",
+      body: JSON.stringify({ availability_status: newStatus })
+    });
+    profile.availability_status = newStatus;
+    toast(`Availability set to ${newStatus}`, "success");
+    renderProfile();
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    hideOverlay();
+  }
+}
+
+// ── Feedback Modal ────────────────────────────────────────────
+function openFeedback(interviewId, candidateName) {
+  currentInterviewId = interviewId;
+  document.getElementById("fbModalTitle").textContent = `Evaluate ${candidateName}`;
+
+  // Pre-populate if feedback already exists
+  const cand = profile.allocated_candidates.find(c => c.interview_id === interviewId);
+  if (cand && cand.has_feedback) {
+    document.getElementById("fTech").value  = cand.technical_score ?? "";
+    document.getElementById("fProb").value  = cand.problem_solving_score ?? "";
+    document.getElementById("fCode").value  = cand.coding_score ?? "";
+    document.getElementById("fComm").value  = cand.communication_score ?? "";
+    document.getElementById("fConf").value  = cand.confidence_score ?? "";
+    document.getElementById("fOver").value  = cand.overall_score ?? "";
+    document.getElementById("fStrengths").value = cand.strengths ?? "";
+    document.getElementById("fWeak").value  = cand.weaknesses ?? "";
+    document.getElementById("fComments").value  = cand.technical_comments ?? "";
+    document.getElementById("fRec").value   = cand.recommendation ?? "HOLD";
+  } else {
+    document.getElementById("feedbackForm").reset();
+  }
+
+  document.getElementById("fbModalBackdrop").classList.add("open");
+}
+
+function closeFbModal() {
+  document.getElementById("fbModalBackdrop").classList.remove("open");
+  currentInterviewId = null;
+}
+
+document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentInterviewId) return;
+
+  const data = {
+    interviewer_id: profile.interviewer_id,
+    technical_score:       Number(document.getElementById("fTech").value),
+    problem_solving_score: Number(document.getElementById("fProb").value),
+    communication_score:   Number(document.getElementById("fComm").value),
+    coding_score:          Number(document.getElementById("fCode").value),
+    confidence_score:      Number(document.getElementById("fConf").value),
+    overall_score:         Number(document.getElementById("fOver").value),
+    strengths:             document.getElementById("fStrengths").value,
+    weaknesses:            document.getElementById("fWeak").value,
+    technical_comments:    document.getElementById("fComments").value,
+    recommendation:        document.getElementById("fRec").value,
+  };
+
+  showOverlay();
+  try {
+    await apiCall(`/feedback/${currentInterviewId}`, { method: "POST", body: JSON.stringify(data) });
+    toast("Feedback saved successfully!", "success");
+    closeFbModal();
+    await loadProfile(currentUser.email);  // Refresh
+  } catch (err) {
+    toast(err.message, "error");
+  } finally {
+    hideOverlay();
+  }
+});
+
+// ── Close modal on backdrop click ─────────────────────────────
+document.getElementById("fbModalBackdrop").addEventListener("click", (e) => {
+  if (e.target === document.getElementById("fbModalBackdrop")) closeFbModal();
+});
+
+// ── Logout ────────────────────────────────────────────────────
+function logout() {
+  currentUser = null;
+  profile = null;
+  document.getElementById("mainDash").style.display = "none";
+  document.getElementById("loginScreen").style.display = "flex";
+  document.getElementById("loginForm").reset();
+  document.getElementById("loginError").style.display = "none";
+}
+// ── Auto-Login via URL (for iframe integration) ──
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const autoEmail = params.get('auto_email');
+  const autoRole = params.get('auto_role');
+  if (autoEmail && autoRole === 'INTERVIEWER') {
+    showOverlay();
+    try {
+      currentUser = { email: autoEmail, role: autoRole, name: autoEmail.split('@')[0], user_id: 'auto' };
+      document.getElementById("topUserName").textContent = currentUser.name;
+      await loadProfile(autoEmail);
+    } catch(err) {
+      document.getElementById("loginError").textContent = err.message;
+      document.getElementById("loginError").style.display = "block";
+      hideOverlay();
+    }
+  }
+});
+</script>
+</body>
+</html>
