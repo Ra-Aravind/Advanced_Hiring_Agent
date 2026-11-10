@@ -3,6 +3,10 @@
 
 This package contains everything developed so far for Phase 2.
 
+### Run Command
+
+.\run_project.ps1
+
 ### Step 1 — Frontend Prototype
 Location: `phase-2/`
 
